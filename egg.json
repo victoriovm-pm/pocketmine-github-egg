@@ -1,0 +1,62 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2022-11-23T18:56:33-03:00",
+    "name": "Pocketmine--MP with Github",
+    "author": "unknown@unknown.com",
+    "description": null,
+    "features": null,
+    "docker_images": {
+        "ghcr.io\/parkervcp\/yolks:debian": "ghcr.io\/parkervcp\/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "if [ ! -d .\/plugins ];\r\nthen mkdir plugins && cd plugins && git clone -b {{BRANCH}} https:\/\/{{TOKEN}}@github.com\/{{REPOSITORY}}.git . && cd ..;\r\nfi;\r\ncd plugins;\r\nif [ -d .git ]; \r\nthen git pull;\r\nfi;\r\ncd ..;\r\n.\/bin\/php7\/bin\/php .\/PocketMine-MP.phar --no-wizard",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"enable-query\": \"true\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n\r\ncd \/mnt\/server\r\n\r\nDOWNLOAD_LINK=$(curl -ssL https:\/\/update.pmmp.io\/api?channel=stable | grep 'download_url' | cut -d '\"' -f 4)\r\ncurl -ssL \"${DOWNLOAD_LINK}\" -o PocketMine-MP.phar\r\n\r\ncurl -sSL -o php.binary.tar.gz https:\/\/jenkins.pmmp.io\/job\/PHP-8.0-Aggregate\/lastStableBuild\/artifact\/PHP-8.0-Linux-x86_64.tar.gz\r\n\r\nif [[ ! -f server.properties ]]; then\r\n  echo -e \"\\n downloading default server.properties\"\r\n  curl -sSL https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/game_eggs\/minecraft\/bedrock\/pocketmine_mp\/server.properties >server.properties\r\nfi\r\n\r\ntar -xzvf php.binary.tar.gz\r\n\r\nrm -rf \/mnt\/server\/php.binary.tar.gz\r\n\r\nEXTENSION_DIR=$(find \"bin\" -name *debug-zts*)\r\ngrep -q '^extension_dir' bin\/php7\/bin\/php.ini && sed -i'bak' \"s{^extension_dir=.*{extension_dir=\\\"$EXTENSION_DIR\\\"{\" bin\/php7\/bin\/php.ini || echo \"extension_dir=\\\"$EXTENSION_DIR\\\"\" >>bin\/php7\/bin\/php.ini\r\n\r\ntouch banned-ips.txt banned-players.txt ops.txt white-list.txt server.log\r\nmkdir -p players worlds resource_packs",
+            "container": "ghcr.io\/parkervcp\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Token",
+            "description": "Insert your github repository token",
+            "env_variable": "TOKEN",
+            "default_value": "token_github",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Repository",
+            "description": "Insert the repository that will be used (format: yourName\/RepositoryName)",
+            "env_variable": "REPOSITORY",
+            "default_value": "repository",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Branch",
+            "description": "Select repository branch",
+            "env_variable": "BRANCH",
+            "default_value": "main",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}
